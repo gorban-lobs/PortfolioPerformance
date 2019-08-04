@@ -8,20 +8,22 @@ class Portfolio:
         self.EXCHANGES_FILE = 'exchanges.csv'
         self.PRICES_FILE = 'prices.csv'
         self.WEIGHTS_FILE = 'weights.csv'
-        self.currencies = pd.read_csv(self.CURRENCIES_FILE)
-        self.exchanges = pd.read_csv(self.EXCHANGES_FILE)
-        self.prices = pd.read_csv(self.PRICES_FILE)
-        self.weights = pd.read_csv(self.WEIGHTS_FILE)
-        
-        self.s = pd.Series([1, 3, 5, np.nan, 6, 8])
+        self.currencies = pd.read_csv(self.CURRENCIES_FILE, index_col=0)
+        self.exchanges = pd.read_csv(self.EXCHANGES_FILE, index_col=0))
+        self.prices = pd.read_csv(self.PRICES_FILE, index_col=0))
+        self.weights = pd.read_csv(self.WEIGHTS_FILE, index_col=0)
 
-    def calculate asset performance(self, start date, end date):
+    def _count_return(self, curr_df):
+        shifted_df = curr_df.shift(1, fill_value=0)
+        return curr_df.sub(shifted_df)
+
+    def calculate_asset_performance(self, start_date, end_date):
         pass
 
-    def calculate currency performance(self, start date, end date):
+    def calculate_currency_performance(self, start_date, end_date):
         pass
 
-    def calculate total performance(self, start date, end date):
+    def calculate_total_performance(self, start_date, end_date):
         pass
 
 
