@@ -5,11 +5,11 @@ import pandas as pd
 class Portfolio:
     def __init__(self, currencies, exchanges, prices, weights):
         self.currencies = currencies
-        self.exchanges = _fill_nan_vals(exchanges)
-        self.prices = _fill_nan_vals(prices)
-        self.weights = _fill_nan_vals(weights)
+        self.exchanges = self._fill_nan_vals(exchanges)
+        self.prices = self._fill_nan_vals(prices)
+        self.weights = self._fill_nan_vals(weights)
 
-    def _fill_nan_vals(dataframe):
+    def _fill_nan_vals(self, dataframe):
         result_dataframe = dataframe.fillna(method='ffill')
         if result_dataframe.isnull().any().any():
             return result_dataframe.fillna(method='bfill')
@@ -18,6 +18,14 @@ class Portfolio:
     def _calc_assets_returns(self, curr_df):
         shifted_df = curr_df.shift(1)
         return curr_df.sud(shifted_df).div(shifted_df)
+
+    def _calc_weighted_returns(self, returns):
+        if returns.columns.difference(self.weights.columns).empty:
+            return returns.sort_index(axis='columns').mul(
+                self.weights.sort_index(axis='columns')).sum(axis='columns')
+        else:
+            print("Different column names in weights file and prices file")
+            return pd.DataFrame()
 
     def _calc_performance(self, series, start_date):
         date_list = np.array([start_date])
