@@ -9,7 +9,13 @@ class Portfolio:
         self.prices = self._fill_nan_vals(prices)
         self.weights = self._fill_nan_vals(weights)
 
+    def _init_current_dataframes(self, start_date, end_date):
+        self.current_exch = self.exchanges.loc[start_date:end_date, :]
+        self.current_prices = self.prices.loc[start_date:end_date, :]
+        self.current_weights = self.weights.loc[start_date:end_date, :]
+
     def _fill_nan_vals(self, dataframe):
+        dataframe.index = pd.to_datetime(dataframe.index)
         new_index = pd.date_range(start=dataframe.index.min(), 
                                   end=dataframe.index.max())
         result_dataframe = dataframe.reindex(new_index).fillna(method='ffill')
@@ -22,9 +28,9 @@ class Portfolio:
         return curr_df.sub(shifted_df).div(shifted_df)
 
     def _calc_weighted_returns(self, returns):
-        if returns.columns.difference(self.weights.columns).empty:
+        if returns.columns.difference(self.current_weights.columns).empty:
             return returns.sort_index(axis='columns').mul(
-                self.weights.sort_index(axis='columns')).sum(axis='columns')
+                self.current_weights.sort_index(axis='columns')).sum(axis='columns')
         else:
             print("Different column names in weights file and prices file")
             return pd.Series()
@@ -41,9 +47,10 @@ class Portfolio:
         return pd.Series(data=perf_list, index=date_list)
 
     def calculate_asset_performance(self, start_date, end_date):
-        asset_returns = self._calc_assets_returns(self.prices)
+        self._init_current_dataframes(start_date, end_date)
+        asset_returns = self._calc_assets_returns(self.current_prices)
         weighted_returns = self._calc_weighted_returns(asset_returns)
-        return self._calc_performance(weighted_returns.loc[start_date:end_date],
+        return self._calc_performance(weighted_returns,
                                       start_date)
 
     def _convert_names_to_ids(self, currency_returns):
@@ -58,6 +65,7 @@ class Portfolio:
         return res_dataframe
 
     def calculate_currency_performance(self, start_date, end_date):
+        self._init_current_dataframes(start_date, end_date)
         currency_returns = self._calc_assets_returns(self.exchanges)
         cur_returns_by_index = self._convert_names_to_ids(currency_returns)
         weighted_returns = self._calc_weighted_returns(cur_returns_by_index)
@@ -74,6 +82,7 @@ class Portfolio:
         return result_dataframe
 
     def calculate_total_performance(self, start_date, end_date):
+        self._init_current_dataframes(start_date, end_date)
         total_returns = self._calc_assets_returns(self._get_price_exch_mul)
         weighted_return = self._calc_weighted_returns(total_returns)
         return self._calc_performance(weighted_return.loc[start_date:end_date],
