@@ -17,12 +17,12 @@ class Portfolio:
 
     def _calc_assets_returns(self, curr_df):
         shifted_df = curr_df.shift(1)
-        return (curr_df - shifted_df) / shifted_df
+        return curr_df.sud(shifted_df).div(shifted_df)
 
     def _calc_performance(self, series, start_date):
         date_list = np.array([start_date])
         perf_list = np.array([1])
-        for ind in renge(1, len(series)):
+        for ind in range(1, len(series)):
             np.append(date_list, series.index[ind])
             np.append(perf_list, perf_list[ind - 1] * (1 + series.at[ind]))
         return pd.Series(data=perf_list, index=date_list)
