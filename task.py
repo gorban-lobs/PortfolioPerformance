@@ -25,7 +25,7 @@ class Portfolio:
                 self.weights.sort_index(axis='columns')).sum(axis='columns')
         else:
             print("Different column names in weights file and prices file")
-            return pd.DataFrame()
+            return pd.Series()
 
     def _calc_performance(self, series, start_date):
         date_list = np.array([start_date])
