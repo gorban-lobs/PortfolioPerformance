@@ -5,9 +5,15 @@ import pandas as pd
 class Portfolio:
     def __init__(self, currencies, exchanges, prices, weights):
         self.currencies = currencies
-        self.exchanges = exchanges.fillna(method='ffill')
-        self.prices = prices.fillna(method='ffill')
-        self.weights = weights.fillna(method='ffill')
+        self.exchanges = _fill_nan_vals(exchanges)
+        self.prices = _fill_nan_vals(prices)
+        self.weights = _fill_nan_vals(weights)
+
+    def _fill_nan_vals(dataframe):
+        result_dataframe = dataframe.fillna(method='ffill')
+        if result_dataframe.isnull().any().any():
+            return result_dataframe.fillna(method='bfill')
+        return result_dataframe
 
     def _calc_assets_returns(self, curr_df):
         shifted_df = curr_df.shift(1)
@@ -36,5 +42,5 @@ class Portfolio:
     def calculate_total_performance(self, start_date, end_date):
         total_returns = _calc_asset_returns(self.prices * self.currencies)
         weighted_return = total_returns.mul(self.weights).sum(axis='columns')
-        return _calc_performance(weighted_return[start_date:end_date], 
+        return _calc_performance(weighted_return[start_date:end_date],
                                 start_date)
