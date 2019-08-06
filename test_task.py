@@ -133,6 +133,32 @@ class TestPortfolio(unittest.TestCase):
                                                                   test_df2),
                                    res_df)
 
+    def test__calc_performance(self):
+        dates = pd.to_datetime(['2016-01-05', '2016-01-06', 
+                                '2016-01-07', '2016-01-08'])
+        test_tuple = (
+            (
+                [1, 2, 3, 4],
+                [1, 3, 12, 60]
+            ),
+            (
+                [1, 1, 1, 1],
+                [1, 2, 4, 8]
+            ),
+            (
+                [0.5, 0.25, 1, -0.5],
+                [1, 1.25, 2.5, 1.25]
+            ),
+        )
+        for i in range(len(test_tuple)):
+            with self.subTest(i=i):
+                test_df = pd.Series(test_tuple[i][0], 
+                                        index=dates)
+                res_df = pd.Series(test_tuple[i][1],
+                                        index=dates)
+                assert_series_equal(self.pf._calc_performance(test_df, 
+                                                              dates[0]),
+                                   res_df)
 
 if __name__ == '__main__':
     unittest.main()
