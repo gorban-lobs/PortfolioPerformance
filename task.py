@@ -37,10 +37,10 @@ class Portfolio:
             return pd.Series([])
 
     def _calc_performance(self, series, start_date):
-        date_list = np.array([start_date])
+        date_list = np.array([pd.to_datetime(start_date)])
         perf_list = np.array([1])
         for ind in range(1, len(series)):
-            date_list = np.append(date_list, series.index[ind])
+            date_list = np.append(date_list, pd.to_datetime(series.index[ind]))
             perf_list = np.append(
                                 perf_list, 
                                 (perf_list[ind - 1] * 
