@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 import pandas as pd
-from pandas.util.testing import assert_frame_equal
+from pandas.util.testing import assert_frame_equal, assert_series_equal
 from task import Portfolio
 
 
@@ -98,6 +98,41 @@ class TestPortfolio(unittest.TestCase):
                 res_df = pd.DataFrame(test_tuple[i][1])
                 assert_frame_equal(self.pf._calc_assets_returns(test_df),
                                    res_df)
+
+    def test__calc_weighted_returns(self):
+        test_tuple = (
+            (
+                [[1, 1], [0, 1]], ['A', 'B'], 
+                [[2, 1], [3, 1]], ['A', 'B'], 
+                [3, 1]
+            ),
+            (
+                [[1, 1], [0, 1]], ['A', 'C'], 
+                [[2, 1], [3, 1]], ['A', 'B'], 
+                [],
+            ),
+            (
+                [[1, 1], [0, 1]], ['B', 'A'], 
+                [[2, 1], [3, 1]], ['A', 'B'],
+                [3, 3]
+            ),
+            (
+                [[1, 2, 3], [0, 1, 0], [1, 2, 0]], ['B', 'A', 'C'], 
+                [[2, 1, 0], [3, 1, 2], [1, 1, 1]], ['A', 'B', 'C'],
+                [5, 3, 3]
+            ),
+        )
+        for i in range(len(test_tuple)):
+            with self.subTest(i=i):
+                test_df1 = pd.DataFrame(test_tuple[i][0], 
+                                        columns=test_tuple[i][1])
+                test_df2 = pd.DataFrame(test_tuple[i][2], 
+                                        columns=test_tuple[i][3])
+                res_df = pd.Series(test_tuple[i][4])
+                assert_series_equal(self.pf._calc_weighted_returns(test_df1, 
+                                                                  test_df2),
+                                   res_df)
+
 
 if __name__ == '__main__':
     unittest.main()
