@@ -53,7 +53,7 @@ class Portfolio:
             cur_name = currencies.at[cur_id]
             if cur_name == 'USD':
                 res_dataframe.loc[:, cur_id] = np.array(
-                    [1.0] * len(currency_returns))
+                    [0.0] * len(currency_returns))
             else:
                 res_dataframe.loc[:, cur_id] = currency_returns.loc[:, cur_name]
         return res_dataframe
@@ -89,10 +89,10 @@ class Portfolio:
 
     def calculate_total_performance(self, start_date, end_date):
         self._init_current_dataframes(start_date, end_date)
-        total_returns = self._calc_assets_returns(self._get_price_exch_mul(),
+        total_returns = self._calc_assets_returns(self._get_price_exch_mul(
                                                   self.current_prices,
                                                   self.current_exch,
-                                                  self.currencies)
+                                                  self.currencies))
         weighted_returns = self._calc_weighted_returns(total_returns,
                                                        self.current_weights)
         return self._calc_performance(weighted_returns, start_date)
