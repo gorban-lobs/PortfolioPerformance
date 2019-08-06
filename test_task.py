@@ -170,12 +170,12 @@ class TestPortfolio(unittest.TestCase):
             (
                 [[2.0, 3.0], [4.0, 5.0]],
                 ['A', 'B'],
-                [[1.0, 2.0, 3.0, 2.0], [1.0, 4.0, 5.0, 4.0]],
+                [[0.0, 2.0, 3.0, 2.0], [0.0, 4.0, 5.0, 4.0]],
             ),
             (
                 [[0.0, 2.0], [3.0, 4.0]],
                 ['B', 'A'],
-                [[1.0, 2.0, 0.0, 2.0], [1.0, 4.0, 3.0, 4.0]]
+                [[0.0, 2.0, 0.0, 2.0], [0.0, 4.0, 3.0, 4.0]]
             ),
         )
         for i in range(len(test_tuple)):
@@ -219,6 +219,103 @@ class TestPortfolio(unittest.TestCase):
                                                                test_ex,
                                                                currencies),
                                     res_df)
+
+    def test_calculate_asset_performance(self):
+        dates = pd.to_datetime(['2016-01-01', '2016-01-02', '2016-01-03'])
+        c_cur = pd.Series(data=['EUR', 'USD'], 
+                          index=['DE0007164600 GR', 'US0527691069 US'])
+        test_tuple = (
+            (
+                [[2], [3], [2]], 
+                [[2, 1], [1, 2], [1, 1]], 
+                [[1, 2], [1, 2], [2, 1]],
+                [1, 1, 0.0]
+            ),
+            (
+                [[2], [3], [2]], 
+                [[2, 2], [3, 2], [2, 1]], 
+                [[1, 0], [2, 2], [1, 1]],
+                [1, 2, 1 / 3]
+            )
+        )
+        for i in range(len(test_tuple)):
+            with self.subTest(i=i):
+                c_ex = pd.DataFrame(data=test_tuple[i][0], index=dates, columns=['EUR'])
+                c_pr = pd.DataFrame(data=test_tuple[i][1], 
+                                    index=dates, 
+                                    columns=['DE0007164600 GR', 'US0527691069 US'])
+                c_w = pd.DataFrame(data=test_tuple[i][2], 
+                                   index=dates, 
+                                   columns=['US0527691069 US', 'DE0007164600 GR'])
+                pf = Portfolio(c_cur, c_ex, c_pr, c_w)
+                res_series = pd.Series(data=test_tuple[i][3], index=dates)
+                assert_series_equal(pf.calculate_asset_performance(dates[0], dates[2]),
+                                    res_series)
+
+    def test_calculate_currency_performance(self):
+        dates = pd.to_datetime(['2016-01-01', '2016-01-02', '2016-01-03'])
+        c_cur = pd.Series(data=['EUR', 'USD'], 
+                          index=['DE0007164600 GR', 'US0527691069 US'])
+        test_tuple = (
+            (
+                [[2], [3], [2]], 
+                [[2, 1], [1, 2], [1, 1]], 
+                [[1, 2], [1, 2], [2, 1]],
+                [1, 2, 4 / 3]
+            ),
+            (
+                [[2], [4], [3]], 
+                [[2, 2], [3, 2], [2, 1]], 
+                [[1, 0], [2, 2], [1, 1]],
+                [1, 3, 2.25]
+            )
+        )
+        for i in range(len(test_tuple)):
+            with self.subTest(i=i):
+                c_ex = pd.DataFrame(data=test_tuple[i][0], index=dates, columns=['EUR'])
+                c_pr = pd.DataFrame(data=test_tuple[i][1], 
+                                    index=dates, 
+                                    columns=['DE0007164600 GR', 'US0527691069 US'])
+                c_w = pd.DataFrame(data=test_tuple[i][2], 
+                                   index=dates, 
+                                   columns=['US0527691069 US', 'DE0007164600 GR'])
+                pf = Portfolio(c_cur, c_ex, c_pr, c_w)
+                res_series = pd.Series(data=test_tuple[i][3], index=dates)
+                assert_series_equal(pf.calculate_currency_performance(dates[0], dates[2]),
+                                    res_series)
+
+    def test_calculate_total_performance(self):
+        dates = pd.to_datetime(['2016-01-01', '2016-01-02', '2016-01-03'])
+        c_cur = pd.Series(data=['EUR', 'USD'], 
+                          index=['DE0007164600 GR', 'US0527691069 US'])
+        test_tuple = (
+            (
+                [[2], [3], [2]], 
+                [[2, 1], [1, 2], [1, 1]], 
+                [[1, 2], [1, 2], [2, 1]],
+                [1, 1.5, -1 / 3 * 1.5]
+            ),
+            (
+                [[2], [4], [3]], 
+                [[2, 2], [3, 3], [2, 1]], 
+                [[1, 0], [2, 2], [1, 1]],
+                [1, 6, -1 / 6 * 6]
+            )
+        )
+        for i in range(len(test_tuple)):
+            with self.subTest(i=i):
+                c_ex = pd.DataFrame(data=test_tuple[i][0], index=dates, columns=['EUR'])
+                c_pr = pd.DataFrame(data=test_tuple[i][1], 
+                                    index=dates, 
+                                    columns=['DE0007164600 GR', 'US0527691069 US'])
+                c_w = pd.DataFrame(data=test_tuple[i][2], 
+                                   index=dates, 
+                                   columns=['US0527691069 US', 'DE0007164600 GR'])
+                pf = Portfolio(c_cur, c_ex, c_pr, c_w)
+                res_series = pd.Series(data=test_tuple[i][3], index=dates)
+                assert_series_equal(pf.calculate_total_performance(dates[0], dates[2]),
+                                    res_series)
+
 
 if __name__ == '__main__':
     unittest.main()
