@@ -27,10 +27,10 @@ class Portfolio:
         shifted_df = curr_df.shift(1)
         return curr_df.sub(shifted_df).div(shifted_df)
 
-    def _calc_weighted_returns(self, returns):
-        if returns.columns.difference(self.current_weights.columns).empty:
+    def _calc_weighted_returns(self, returns, current_weights):
+        if returns.columns.difference(current_weights.columns).empty:
             return returns.sort_index(axis='columns').mul(
-                self.current_weights.sort_index(axis='columns')).sum(
+                current_weights.sort_index(axis='columns')).sum(
                     axis='columns', skipna=False)
         else:
             print("Different column names in weights file and prices file")
@@ -61,14 +61,16 @@ class Portfolio:
     def calculate_asset_performance(self, start_date, end_date):
         self._init_current_dataframes(start_date, end_date)
         asset_returns = self._calc_assets_returns(self.current_prices)
-        weighted_returns = self._calc_weighted_returns(asset_returns)
+        weighted_returns = self._calc_weighted_returns(asset_returns,
+                                                       self.current_weights)
         return self._calc_performance(weighted_returns, start_date)
 
     def calculate_currency_performance(self, start_date, end_date):
         self._init_current_dataframes(start_date, end_date)
         currency_returns = self._calc_assets_returns(self.current_exch)
         cur_returns_by_index = self._convert_names_to_ids(currency_returns)
-        weighted_returns = self._calc_weighted_returns(cur_returns_by_index)
+        weighted_returns = self._calc_weighted_returns(cur_returns_by_index,
+                                                       self.current_weights)
         return self._calc_performance(weighted_returns, start_date)
 
     def _get_price_exch_mul(self):
@@ -86,5 +88,6 @@ class Portfolio:
     def calculate_total_performance(self, start_date, end_date):
         self._init_current_dataframes(start_date, end_date)
         total_returns = self._calc_assets_returns(self._get_price_exch_mul())
-        weighted_returns = self._calc_weighted_returns(total_returns)
+        weighted_returns = self._calc_weighted_returns(total_returns,
+                                                       self.current_weights)
         return self._calc_performance(weighted_returns, start_date)
