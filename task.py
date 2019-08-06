@@ -47,10 +47,10 @@ class Portfolio:
                                 (1 + series.iat[ind])))
         return pd.Series(data=perf_list, index=date_list)
 
-    def _convert_names_to_ids(self, currency_returns):
-        res_dataframe = self.current_weights.copy()
-        for cur_id in self.current_weights.columns:
-            cur_name = self.currencies.at[cur_id]
+    def _convert_names_to_ids(self, currency_returns, sample_df, currencies):
+        res_dataframe = sample_df.copy()
+        for cur_id in sample_df.columns:
+            cur_name = currencies.at[cur_id]
             if cur_name == 'USD':
                 res_dataframe.loc[:, cur_id] = np.array(
                     [1.0] * len(currency_returns))
@@ -68,7 +68,9 @@ class Portfolio:
     def calculate_currency_performance(self, start_date, end_date):
         self._init_current_dataframes(start_date, end_date)
         currency_returns = self._calc_assets_returns(self.current_exch)
-        cur_returns_by_index = self._convert_names_to_ids(currency_returns)
+        cur_returns_by_index = self._convert_names_to_ids(currency_returns,
+                                                        self.current_weights,
+                                                        self.currencies)
         weighted_returns = self._calc_weighted_returns(cur_returns_by_index,
                                                        self.current_weights)
         return self._calc_performance(weighted_returns, start_date)
