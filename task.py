@@ -75,10 +75,10 @@ class Portfolio:
                                                        self.current_weights)
         return self._calc_performance(weighted_returns, start_date)
 
-    def _get_price_exch_mul(self):
-        result_dataframe = self.current_prices.copy()
-        for cur_id in self.current_prices.columns:
-            cur_name = self.currencies.at[cur_id]
+    def _get_price_exch_mul(self, current_prices, currencies):
+        result_dataframe = current_prices.copy()
+        for cur_id in current_prices.columns:
+            cur_name = currencies.at[cur_id]
             if cur_name == 'USD':
                 result_dataframe.loc[:, cur_id] = self.current_prices.loc[:, cur_id]
             else:
@@ -89,7 +89,9 @@ class Portfolio:
 
     def calculate_total_performance(self, start_date, end_date):
         self._init_current_dataframes(start_date, end_date)
-        total_returns = self._calc_assets_returns(self._get_price_exch_mul())
+        total_returns = self._calc_assets_returns(self._get_price_exch_mul(),
+                                                  self.current_prices,
+                                                  self.currencies)
         weighted_returns = self._calc_weighted_returns(total_returns,
                                                        self.current_weights)
         return self._calc_performance(weighted_returns, start_date)
