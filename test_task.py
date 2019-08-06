@@ -159,6 +159,35 @@ class TestPortfolio(unittest.TestCase):
                 assert_series_equal(self.pf._calc_performance(test_df, 
                                                               dates[0]),
                                    res_df)
+    
+    def test__convert_names_to_ids(self):
+        columns = ['u1', 'a1', 'b1', 'a2']
+        sample_df = pd.DataFrame(np.random.randn(2, 4), 
+                                 columns=columns)
+        currencies = pd.Series(['USD', 'A', 'B', 'A'], 
+                                  index=columns)
+        test_tuple = (
+            (
+                [[2.0, 3.0], [4.0, 5.0]],
+                ['A', 'B'],
+                [[1.0, 2.0, 3.0, 2.0], [1.0, 4.0, 5.0, 4.0]],
+            ),
+            (
+                [[0.0, 2.0], [3.0, 4.0]],
+                ['B', 'A'],
+                [[1.0, 2.0, 0.0, 2.0], [1.0, 4.0, 3.0, 4.0]]
+            ),
+        )
+        for i in range(len(test_tuple)):
+            with self.subTest(i=i):
+                test_df = pd.DataFrame(test_tuple[i][0], 
+                                       columns=test_tuple[i][1])
+                res_df = pd.DataFrame(test_tuple[i][2],
+                                      columns=columns)
+                assert_frame_equal(self.pf._convert_names_to_ids(test_df, 
+                                                                  sample_df,
+                                                                  currencies),
+                                    res_df)
 
 if __name__ == '__main__':
     unittest.main()
