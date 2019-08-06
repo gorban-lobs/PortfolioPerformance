@@ -188,6 +188,37 @@ class TestPortfolio(unittest.TestCase):
                                                                   sample_df,
                                                                   currencies),
                                     res_df)
+    
+    def test__get_price_exch_mul(self):
+        prices_columns = ['u1', 'a1', 'b1', 'a2']
+        currencies = pd.Series(['USD', 'A', 'B', 'A'], 
+                               index=prices_columns)
+        test_tuple = (
+            (
+                [[2.0, 1.0], [1.0, 2.0]],
+                ['A', 'B'],
+                [[1.0, 2.0, 3.0, 2.0], [1.0, 4.0, 5.0, 4.0]],
+                [[1.0, 4.0, 3.0, 4.0], [1.0, 4.0, 10.0, 4.0]],
+            ),
+            (
+                [[0.0, 2.0], [3.0, 4.0]],
+                ['B', 'A'],
+                [[1.0, 2.0, 0.0, 2.0], [1.0, 4.0, 3.0, 4.0]],
+                [[1.0, 4.0, 0.0, 4.0], [1.0, 16.0, 9.0, 16.0]],
+            ),
+        )
+        for i in range(len(test_tuple)):
+            with self.subTest(i=i):
+                test_ex = pd.DataFrame(test_tuple[i][0], 
+                                       columns=test_tuple[i][1])
+                test_pr = pd.DataFrame(test_tuple[i][2],
+                                       columns=prices_columns)
+                res_df = pd.DataFrame(test_tuple[i][3],
+                                      columns=prices_columns)
+                assert_frame_equal(self.pf._get_price_exch_mul(test_pr, 
+                                                               test_ex,
+                                                               currencies),
+                                    res_df)
 
 if __name__ == '__main__':
     unittest.main()
