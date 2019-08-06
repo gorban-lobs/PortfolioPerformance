@@ -76,7 +76,6 @@ class TestPortfolio(unittest.TestCase):
                 dates
             )
         )
-
         for i in range(len(test_tuple)):
             with self.subTest(i=i):
                 test_df = pd.DataFrame(test_tuple[i][0], 
@@ -86,6 +85,19 @@ class TestPortfolio(unittest.TestCase):
                 assert_frame_equal(self.pf._fill_nan_vals(test_df),
                                    res_df)
 
+    def test__calc_assets_returns(self):
+        test_tuple = (
+            ([1, 1, 1], [np.nan, 0, 0]),
+            ([1, 2, 3, 4], [np.nan, 1, 1/2, 1/3]),
+            ([2, -2, 2, -2], [np.nan, -2, -2, -2]),
+            ([1, -3, 10, 4], [np.nan, -4, -13/3, -0.6]),
+        )
+        for i in range(len(test_tuple)):
+            with self.subTest(i=i):
+                test_df = pd.DataFrame(test_tuple[i][0])
+                res_df = pd.DataFrame(test_tuple[i][1])
+                assert_frame_equal(self.pf._calc_assets_returns(test_df),
+                                   res_df)
 
 if __name__ == '__main__':
     unittest.main()
