@@ -30,7 +30,8 @@ class Portfolio:
     def _calc_weighted_returns(self, returns):
         if returns.columns.difference(self.current_weights.columns).empty:
             return returns.sort_index(axis='columns').mul(
-                self.current_weights.sort_index(axis='columns')).sum(axis='columns')
+                self.current_weights.sort_index(axis='columns')).sum(
+                    axis='columns', skipna=False)
         else:
             print("Different column names in weights file and prices file")
             return pd.Series()
@@ -46,16 +47,9 @@ class Portfolio:
                                 (1 + series.iat[ind])))
         return pd.Series(data=perf_list, index=date_list)
 
-    def calculate_asset_performance(self, start_date, end_date):
-        self._init_current_dataframes(start_date, end_date)
-        asset_returns = self._calc_assets_returns(self.current_prices)
-        weighted_returns = self._calc_weighted_returns(asset_returns)
-        return self._calc_performance(weighted_returns,
-                                      start_date)
-
     def _convert_names_to_ids(self, currency_returns):
-        res_dataframe = pd.DataFrame()
-        for cur_id in self.weights.columns:
+        res_dataframe = self.current_weights.copy()
+        for cur_id in self.current_weights.columns:
             cur_name = self.currencies.at[cur_id]
             if cur_name == 'USD':
                 res_dataframe.loc[:, cur_id] = np.array(
@@ -64,26 +58,33 @@ class Portfolio:
                 res_dataframe.loc[:, cur_id] = currency_returns.loc[:, cur_name]
         return res_dataframe
 
+    def calculate_asset_performance(self, start_date, end_date):
+        self._init_current_dataframes(start_date, end_date)
+        asset_returns = self._calc_assets_returns(self.current_prices)
+        weighted_returns = self._calc_weighted_returns(asset_returns)
+        return self._calc_performance(weighted_returns, start_date)
+
     def calculate_currency_performance(self, start_date, end_date):
         self._init_current_dataframes(start_date, end_date)
-        currency_returns = self._calc_assets_returns(self.exchanges)
+        currency_returns = self._calc_assets_returns(self.current_exch)
         cur_returns_by_index = self._convert_names_to_ids(currency_returns)
         weighted_returns = self._calc_weighted_returns(cur_returns_by_index)
-        return self._calc_performance(weighted_returns.loc[start_date:end_date], 
-                                      start_date)
+        return self._calc_performance(weighted_returns, start_date)
 
     def _get_price_exch_mul(self):
-        result_dataframe = pd.DateFrame()
-        for cur_id in self.prices.columns:
+        result_dataframe = self.current_prices.copy()
+        for cur_id in self.current_prices.columns:
             cur_name = self.currencies.at[cur_id]
-            new_col = (self.prices.loc[:, cur_id] *
-                      self.exchanges.loc[:, cur_name])
-            result_dataframe.loc[:, cur_id] = new_col
+            if cur_name == 'USD':
+                result_dataframe.loc[:, cur_id] = self.current_prices.loc[:, cur_id]
+            else:
+                new_col = (self.current_prices.loc[:, cur_id] *
+                          self.current_exch.loc[:, cur_name])
+                result_dataframe.loc[:, cur_id] = new_col
         return result_dataframe
 
     def calculate_total_performance(self, start_date, end_date):
         self._init_current_dataframes(start_date, end_date)
-        total_returns = self._calc_assets_returns(self._get_price_exch_mul)
-        weighted_return = self._calc_weighted_returns(total_returns)
-        return self._calc_performance(weighted_return.loc[start_date:end_date],
-                                start_date)
+        total_returns = self._calc_assets_returns(self._get_price_exch_mul())
+        weighted_returns = self._calc_weighted_returns(total_returns)
+        return self._calc_performance(weighted_returns, start_date)
